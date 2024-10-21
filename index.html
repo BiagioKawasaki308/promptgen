@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore di Prompt Avanzato e Interattivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 850px;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+        .container:hover {
+            transform: scale(1.03);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #6a11cb;
+            letter-spacing: 1px;
+        }
+        .input-section, .options-section, .output-section {
+            margin-bottom: 30px;
+        }
+        textarea, select {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #f9f9f9;
+        }
+        textarea:focus, select:focus {
+            border-color: #6a11cb;
+            outline: none;
+            box-shadow: 0 0 12px rgba(106, 17, 203, 0.4);
+        }
+        .options-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .option-item {
+            background-color: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1 1 calc(45% - 10px);
+            box-sizing: border-box;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .option-item input {
+            margin-right: 10px;
+        }
+        .option-item:hover {
+            background-color: #6a11cb;
+            color: #fff;
+            transform: translateY(-5px);
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 15px 40px;
+            background-color: #6a11cb;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #541aa1;
+            transform: scale(1.08);
+        }
+        #output, #keyPointsOutput {
+            padding: 25px;
+            background-color: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            min-height: 120px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            transition: background-color 0.3s ease;
+        }
+        #output:hover, #keyPointsOutput:hover {
+            background-color: #e0e0e0;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 10px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 140%;
+            left: 50%;
+            margin-left: -120px;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .progress-bar {
+            width: 0;
+            height: 10px;
+            background-color: #6a11cb;
+            margin-top: 15px;
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+        .suggestions-section {
+            background-color: #f0f0f0;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .suggestions-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .suggestion {
+            background-color: #ffffff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .suggestion:hover {
+            background-color: #e5e5ff;
+        }
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            .option-item {
+                flex: 1 1 100%;
+            }
+            button {
+                font-size: 1rem;
+                padding: 12px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Generatore di Prompt</h1>
+        </div>
+        <div class="input-section">
+            <label for="promptType">Seleziona il tipo di prompt:</label>
+            <select id="promptType">
+                <option value="report">Report</option>
+                <option value="email">Email</option>
+                <option value="marketing">Marketing</option>
+                <option value="progetto">Progetto</option>
+                <option value="presentazione">Presentazione</option>
+                <option value="social">Social Media Content</option>
+                <option value="personalizzato">Personalizzato</option>
+            </select>
+            <div id="marketingPlatformSection" style="display: none; margin-top: 20px;">
+                <label for="marketingPlatform">Seleziona la piattaforma di marketing:</label>
+                <select id="marketingPlatform">
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="tiktok">TikTok</option>
+                </select>
+            </div>
+            <label for="promptInput" style="margin-top: 20px; display: block;">Inserisci il tuo obiettivo o contesto:</label>
+            <textarea id="promptInput" rows="4" placeholder="Esempio: Devo scrivere un report sulle vendite trimestrali..."></textarea>
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        
+        <!-- Sezione suggerimenti -->
+        <div class="suggestions-section" id="suggestionsSection" style="display: none;">
+            <h2>Suggerimenti:</h2>
+            <div id="suggestionsContainer"></div>
+        </div>
+        
+        <div class="options-section">
+            <div class="option-item tooltip">
+                <input type="checkbox" id="formal" name="promptOptions">
+                <label for="formal">Tono Formale</label>
+                <span class="tooltiptext">Utilizza un tono professionale e rispettoso.</span>
+            </div>
+            <div class="option-item tooltip">
+                <input type="checkbox" id="detailed" name="promptOptions">
+                <label for="detailed">Risposta Dettagliata</label>
+                <span class="tooltiptext">Includi tutti i dettagli rilevanti per un'analisi approfondita.</span>
+            </div>
+            <div class="option-item tooltip">
+                <input type="checkbox" id="technical" name="promptOptions">
+                <label for="technical">Linguaggio Tecnico</label>
+                <span class="tooltiptext">Utilizza terminologia specifica e appropriata per esperti.</span>
+            </div>
+            <div class="option-item tooltip">
+                <input type="checkbox" id="concise" name="promptOptions">
+                <label for="concise">Riepilogo Conciso</label>
+                <span class="tooltiptext">Fornisci un riassunto chiaro e diretto dei punti chiave.</span>
+            </div>
+            <div class="option-item tooltip">
+                <input type="checkbox" id="engaging" name="promptOptions">
+                <label for="engaging">Coinvolgente</label>
+                <span class="tooltiptext">Rendi il testo coinvolgente per mantenere alta l'attenzione del lettore.</span>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button onclick="generatePrompt(true)">Genera Prompt</button>
+            <button onclick="generateKeyPoints(true)">Genera Punti Chiave</button>
+            <button onclick="clearFields()">Cancella Tutto</button>
+            <button onclick="copyToClipboard()">Copia negli Appunti</button>
+        </div>
+        
+        <div class="output-section">
+            <h2>Prompt Generato:</h2>
+            <div id="output"></div>
+        </div>
+        
+        <div class="output-section">
+            <h2>Punti Chiave Generati:</h2>
+            <div id="keyPointsOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("promptType").addEventListener("change", function() {
+            clearFields();
+            
+            if (this.value === "marketing") {
+                document.getElementById("marketingPlatformSection").style.display = "block";
+            } else {
+                document.getElementById("marketingPlatformSection").style.display = "none";
+            }
+        });
+
+        function getCheckedOptions() {
+            const options = [];
+            if (document.getElementById("formal").checked) {
+                options.push("con un tono formale");
+            }
+            if (document.getElementById("detailed").checked) {
+                options.push("dettagliato, fornendo ogni dettaglio rilevante");
+            }
+            if (document.getElementById("technical").checked) {
+                options.push("utilizzando un linguaggio tecnico");
+            }
+            if (document.getElementById("concise").checked) {
+                options.push("essendo conciso e riassumendo le informazioni principali");
+            }
+            if (document.getElementById("engaging").checked) {
+                options.push("coinvolgente, per mantenere alta l'attenzione del lettore");
+            }
+            return options;
+        }
+
+        function generatePrompt(isKeyPointsGenerated) {
+            const progressBar = document.getElementById("progressBar");
+            progressBar.style.width = "0%";
+            setTimeout(() => progressBar.style.width = "100%", 100);
+
+            setTimeout(() => {
+                const promptInput = document.getElementById("promptInput").value;
+                const promptType = document.getElementById("promptType").value;
+                const options = getCheckedOptions();
+
+                const promptTemplates = {
+                    report: [
+                        `Crea un report ${options.length > 0 ? options.join(" e ") : ""} basato su questo contesto: "${promptInput}". Assicurati di fornire un'analisi chiara e dettagliata.`,
+                        `Redigi un report ${options.length > 0 ? options.join(" e ") : ""} partendo dalle seguenti informazioni: "${promptInput}". Presenta i dati in modo strutturato e professionale.`,
+                        `Genera un report che ${options.length > 0 ? options.join(" e ") : ""} analizzi: "${promptInput}". Mantieni un linguaggio chiaro e coerente.`
+                    ],
+                    email: [
+                        `Scrivi un'email ${options.length > 0 ? options.join(" e ") : ""} per comunicare il seguente contesto: "${promptInput}". Assicurati che il messaggio sia ben comprensibile e adatto al destinatario.`,
+                        `Crea un'email professionale ${options.length > 0 ? options.join(" e ") : ""} basata su: "${promptInput}". Includi una chiara chiamata all'azione.`
+                    ],
+                    marketing: {
+                        linkedin: [
+                            `Crea un testo di marketing per LinkedIn ${options.length > 0 ? options.join(" e ") : ""} basato su: "${promptInput}". Assicurati di attirare l'attenzione del target professionale e di generare engagement.`,
+                            `Redigi un post per LinkedIn ${options.length > 0 ? options.join(" e ") : ""} per promuovere: "${promptInput}". Concentrati sul valore professionale e sulla crescita del network.`
+                        ],
+                        instagram: [
+                            `Crea un messaggio per una campagna marketing su Instagram ${options.length > 0 ? options.join(" e ") : ""} per promuovere: "${promptInput}". Focalizzati sull'impatto visivo e sull'interazione con il pubblico giovane.`,
+                            `Scrivi una descrizione accattivante per un post Instagram ${options.length > 0 ? options.join(" e ") : ""} che riguardi: "${promptInput}". Assicurati di includere hashtag rilevanti.`
+                        ],
+                        facebook: [
+                            `Genera un messaggio pubblicitario per Facebook che ${options.length > 0 ? options.join(" e ") : ""} valorizzi: "${promptInput}". Rendi il testo persuasivo e adatto alla piattaforma.`,
+                            `Scrivi un post per una campagna Facebook ${options.length > 0 ? options.join(" e ") : ""} per attirare l'attenzione su: "${promptInput}". Concentrati su un linguaggio accessibile e coinvolgente.`
+                        ],
+                        twitter: [
+                            `Crea un tweet promozionale ${options.length > 0 ? options.join(" e ") : ""} riguardo: "${promptInput}". Assicurati che sia breve, incisivo e utilizzi hashtag appropriati.`,
+                            `Scrivi un messaggio per Twitter ${options.length > 0 ? options.join(" e ") : ""} per promuovere: "${promptInput}". Mantieni il testo sotto i 280 caratteri e punta alla chiarezza.`
+                        ],
+                        tiktok: [
+                            `Crea uno script per un video TikTok ${options.length > 0 ? options.join(" e ") : ""} riguardo: "${promptInput}". Assicurati che sia breve, coinvolgente e abbia un impatto visivo forte.`,
+                            `Scrivi un'idea per un video TikTok ${options.length > 0 ? options.join(" e ") : ""} su: "${promptInput}". Mantieni il messaggio chiaro e creativo per massimizzare l'engagement.`
+                        ]
+                    },
+                    progetto: [
+                        `Scrivi una descrizione di progetto ${options.length > 0 ? options.join(" e ") : ""} basata su: "${promptInput}". Dettaglia gli obiettivi e le risorse necessarie.`,
+                        `Crea un piano di progetto ${options.length > 0 ? options.join(" e ") : ""} partendo da: "${promptInput}". Assicurati di includere le fasi principali e le tempistiche.`
+                    ],
+                    presentazione: [
+                        `Crea una presentazione ${options.length > 0 ? options.join(" e ") : ""} basata su: "${promptInput}". Evidenzia i punti salienti e usa un linguaggio chiaro e conciso.`,
+                        `Scrivi il contenuto per una presentazione ${options.length > 0 ? options.join(" e ") : ""} su: "${promptInput}". Assicurati di avere una struttura logica e di catturare l'attenzione del pubblico.`
+                    ],
+                    social: [
+                        `Crea un contenuto per i social media ${options.length > 0 ? options.join(" e ") : ""} basato su: "${promptInput}". Assicurati di attirare l'attenzione del pubblico e di incoraggiare l'interazione.`,
+                        `Genera un post social ${options.length > 0 ? options.join(" e ") : ""} che promuova: "${promptInput}". Utilizza un linguaggio coinvolgente e aggiungi hashtag pertinenti.`
+                    ],
+                    personalizzato: [
+                        `Scrivi un testo ${options.length > 0 ? options.join(" e ") : ""} basato su questo contesto: "${promptInput}". Assicurati di fornire un output chiaro e utile per l'obiettivo prefissato.`,
+                        `Crea un documento ${options.length > 0 ? options.join(" e ") : ""} partendo da questo input: "${promptInput}". L'obiettivo è generare un testo di alta qualità che soddisfi i requisiti specificati.`
+                    ]
+                };
+
+                let prompt = "";
+                if (promptType === "marketing") {
+                    const marketingPlatform = document.getElementById("marketingPlatform").value;
+                    const variations = promptTemplates.marketing[marketingPlatform];
+                    const randomIndex = Math.floor(Math.random() * variations.length);
+                    prompt = variations[randomIndex].trim();
+                } else {
+                    const variations = promptTemplates[promptType];
+                    const randomIndex = Math.floor(Math.random() * variations.length);
+                    prompt = variations[randomIndex].trim();
+                }
+
+                if (isKeyPointsGenerated) {
+                    const keyPoints = Array.from(document.querySelectorAll('#keyPointsOutput div')).map(div => div.textContent);
+                    if (keyPoints.length > 0) {
+                        prompt += ` Considera anche questi punti chiave: ${keyPoints.join('; ')}.`;
+                    }
+                }
+
+                document.getElementById("output").innerHTML = prompt;
+                generateSuggestions(promptType);
+            }, 500);
+        }
+
+        function generateKeyPoints(isPromptGenerated) {
+            const promptInput = document.getElementById("promptInput").value;
+            const keyPointsOutput = document.getElementById("keyPointsOutput");
+            keyPointsOutput.innerHTML = "";
+
+            const keyPointsTemplates = {
+                generali: [
+                    "Identifica i punti chiave pertinenti",
+                    "Sottolinea gli aspetti critici",
+                    "Fornisci raccomandazioni o considerazioni basate sul contesto",
+                    "Valuta le potenziali sfide e soluzioni",
+                    "Riassumi i dettagli importanti per ottenere chiarezza"
+                ]
+            };
+
+            let keyPoints = keyPointsTemplates.generali;
+            const shuffledKeyPoints = keyPoints.sort(() => 0.5 - Math.random()).slice(0, 3);
+            shuffledKeyPoints.forEach(point => {
+                const div = document.createElement("div");
+                div.textContent = `- ${point}`;
+                keyPointsOutput.appendChild(div);
+            });
+
+            if (isPromptGenerated) {
+                generatePrompt(true);
+            }
+        }
+
+        function generateSuggestions(promptType) {
+            const suggestionsContainer = document.getElementById("suggestionsContainer");
+            const suggestionsSection = document.getElementById("suggestionsSection");
+            suggestionsContainer.innerHTML = "";
+
+            const suggestionTemplates = {
+                report: [
+                    "Includi una panoramica generale prima di entrare nei dettagli.",
+                    "Sottolinea i punti chiave con statistiche e dati di supporto.",
+                    "Utilizza diagrammi o grafici per rappresentare i dati complessi in modo visivo."
+                ],
+                email: [
+                    "Inizia con un'introduzione cortese per catturare l'attenzione del destinatario.",
+                    "Assicurati che la chiamata all'azione sia chiara e ben evidenziata.",
+                    "Evita frasi lunghe e mantieni un tono amichevole ma formale."
+                ],
+                marketing: [
+                    "Crea un messaggio che evochi emozioni per attrarre l'attenzione.",
+                    "Utilizza hashtag rilevanti per incrementare la visibilità.",
+                    "Coinvolgi il pubblico ponendo domande dirette."
+                ],
+                progetto: [
+                    "Definisci chiaramente gli obiettivi e le risorse necessarie.",
+                    "Identifica le principali fasi del progetto e i rispettivi tempi di consegna.",
+                    "Specifica i ruoli e le responsabilità di ogni membro del team."
+                ],
+                presentazione: [
+                    "Inizia la presentazione con un'introduzione accattivante per catturare l'attenzione del pubblico.",
+                    "Utilizza elementi visivi per rafforzare i punti salienti.",
+                    "Termina con una forte chiamata all'azione o con una domanda che stimoli la discussione."
+                ],
+                social: [
+                    "Mantieni il messaggio breve e incisivo.",
+                    "Utilizza hashtag e emoji per aumentare l'engagement.",
+                    "Condividi una storia personale o un'esperienza per connetterti con il pubblico."
+                ],
+                personalizzato: [
+                    "Fornisci un contesto dettagliato per rendere il testo più efficace.",
+                    "Considera chi sarà il pubblico di destinazione e adatta il tono di conseguenza.",
+                    "Verifica che ogni punto sia ben collegato al contesto fornito."
+                ]
+            };
+
+            let suggestions = suggestionTemplates[promptType] || ["Sii chiaro e diretto nel tuo messaggio.", "Includi dati concreti per sostenere le tue affermazioni."];
+            suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 5);
+
+            suggestions.forEach(suggestion => {
+                const div = document.createElement("div");
+                div.classList.add("suggestion");
+                div.textContent = suggestion;
+                suggestionsContainer.appendChild(div);
+            });
+
+            suggestionsSection.style.display = "block";
+        }
+
+        function clearFields() {
+            document.getElementById("promptInput").value = "";
+            document.getElementById("output").innerHTML = "";
+            document.getElementById("keyPointsOutput").innerHTML = "";
+            document.querySelectorAll('.options-section input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+            document.getElementById("progressBar").style.width = "0%";
+        }
+
+        function copyToClipboard() {
+            const outputText = document.getElementById("output").textContent;
+            if (outputText) {
+                navigator.clipboard.writeText(outputText).then(() => {
+                    alert("Prompt copiato negli appunti!");
+                }).catch(err => {
+                    console.error("Errore durante la copia negli appunti: ", err);
+                });
+            } else {
+                alert("Nessun prompt da copiare!");
+            }
+        }
+    </script>
+</body>
+</html>
